@@ -1,0 +1,150 @@
+apply plugin: 'com.android.library'
+apply plugin: 'com.github.dcendents.android-maven'
+apply plugin: 'com.jfrog.bintray'
+
+android {
+    compileSdkVersion 25
+    buildToolsVersion '25.0.3'
+
+    defaultConfig {
+        minSdkVersion 15
+        targetSdkVersion 25
+        versionCode 1
+        versionName "1.0"
+
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_7
+        targetCompatibility JavaVersion.VERSION_1_7
+    }
+}
+
+group = 'com.shnoble.module'
+version = '1.0.2'
+
+install {
+    repositories.mavenInstaller {
+        pom.project {
+            name 'ModuleBintray'
+            description 'Bintray sample library'
+            url 'https://github.com/shnoble/android-maven-jcenter'
+            inceptionYear '2017' // release date
+
+            // Gradle dependencies
+            packaging 'aar'
+            groupId 'com.shnoble.module'
+            artifactId 'module-bintray'
+            version '1.0.2'
+
+            licenses {
+                license {
+                    name 'The Apache Software License, Version 2.0'
+                    url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                    distribution 'repo'
+                }
+            }
+
+            scm {   // Optional
+                connection 'https://github.com/shnoble/android-maven-jcenter.git'
+                developerConnection 'https://github.com/shnoble/android-maven-jcenter'
+                url 'https://github.com/shnoble/android-maven-jcenter'
+            }
+
+            developers { // Optional
+                developer {
+                    id 'shnoble'
+                    name 'shnoble'
+                    email 'shnoble79@gmail.com'
+                }
+            }
+        }
+
+        pom.whenConfigured { pom ->
+            pom.dependencies.forEach { dep ->
+                if (dep.getVersion() == "unspecified") {
+                    dep.setGroupId('com.shnoble.module')
+                    dep.setVersion('1.0.2')
+                }
+            }
+        }
+    }
+}
+
+bintray {
+    user = 'shnoble79'
+    key = '1feb95372df61409ad421a1c989e7a860cf6b8f7'
+
+    configurations = ['archives'] // When uploading configuration files
+
+    publish = true // [Default: false] Whether version should be auto published after an upload
+
+    pkg {
+        repo = 'android-maven-jcenter' // Repository name (Created in the repository Bintray site)
+        name = 'module-bintray' // module name
+        userOrg = 'shnoble79' // An optional organization name when the repo belongs to one of the user's orgs
+        desc = 'Bintray sample library' // Optional
+        licenses = ['Apache-2.0']
+
+        vcsUrl = 'https://github.com/shnoble/android-maven-jcenter.git'
+        websiteUrl = 'https://github.com/shnoble/android-maven-jcenter'
+        // issueTrackerUrl = '' // Optional
+
+        labels = ['aar', 'android', 'example'] // Optional
+        publicDownloadNumbers = true
+
+        githubRepo = 'https://github.com/shnoble/android-maven-jcenter' // Optional Github repository
+        githubReleaseNotesFile = 'README.md' // Optional Github readme file
+
+        version {
+            name = '1.0.2' // The name of your library project
+            desc = 'Gradle Bintray sample' // Optional - Version-specific description'
+            released  = new Date() // Optional - Date of the version release. 2 possible values: date in the format of 'yyyy-MM-dd'T'HH:mm:ss.SSSZZ' OR a java.util.Date instance
+            vcsTag = '1.0.2'
+        }
+    }
+}
+
+// JCenter publish
+task sourcesJar(type: Jar) {
+    from android.sourceSets.main.java.srcDirs
+    classifier = 'sources'
+}
+
+// Optional docs
+task javadoc(type: Javadoc) {
+    source = android.sourceSets.main.java.srcDirs
+    classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
+}
+
+// Optional javadoc
+task javadocJar(type: Jar, dependsOn: javadoc) {
+    classifier = 'javadoc'
+    from javadoc.destinationDir
+}
+
+artifacts {
+    archives javadocJar // Optional
+    archives sourcesJar
+}
+
+task findConventions << {
+    println project.getConvention()
+}
+
+dependencies {
+    compile fileTree(include: ['*.jar'], dir: 'libs')
+    androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
+        exclude group: 'com.android.support', module: 'support-annotations'
+    })
+    compile 'com.android.support:appcompat-v7:25.3.1'
+    testCompile 'junit:junit:4.12'
+    compile project(':module-sub')
+}
